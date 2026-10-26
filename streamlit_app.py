@@ -313,25 +313,19 @@ def build_spending_by_education(df: pd.DataFrame):
     )
 
     fig.update_layout(
-        title={
-            "text": "Spending by Education",
-            "x": 0.5,
-            "xanchor": "center",
-            "font": {"size": 26, "color": "#f8fafc"},
-        },
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=20, r=20, t=90, b=35),
-        height=500,
+        margin=dict(l=20, r=20, t=100, b=30),
+        height=520,
         legend={
             "title": {"text": "Product Category", "font": {"color": "#f8fafc", "size": 14}},
             "orientation": "h",
             "x": 0.0,
-            "y": 1.12,
+            "y": 1.18,
             "xanchor": "left",
-            "yanchor": "bottom",
-            "bgcolor": "rgba(15, 23, 42, 0.5)",
-            "bordercolor": "rgba(148, 163, 184, 0.15)",
+            "yanchor": "top",
+            "bgcolor": "rgba(15, 23, 42, 0.45)",
+            "bordercolor": "rgba(148, 163, 184, 0.12)",
             "borderwidth": 1,
             "font": {"size": 12, "color": "#f8fafc"},
             "traceorder": "normal",
