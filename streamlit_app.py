@@ -310,32 +310,40 @@ def build_spending_by_education(df: pd.DataFrame):
             "Amount": "Total Spend",
             "Product": "Product Category",
         },
-        title="Spending by Education Level and Product Category",
     )
+
     fig.update_layout(
         title={
-            "text": "Spending by Education Level and Product Category",
+            "text": "Spending by Education",
             "x": 0.5,
             "xanchor": "center",
-            "font": {"size": 22, "color": "#f8fafc"},
+            "font": {"size": 26, "color": "#f8fafc"},
         },
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=20, r=20, t=70, b=40),
+        margin=dict(l=20, r=20, t=90, b=35),
         height=500,
         legend={
+            "title": {"text": "Product Category", "font": {"color": "#f8fafc", "size": 14}},
             "orientation": "h",
-            "x": 0,
+            "x": 0.0,
             "y": 1.12,
             "xanchor": "left",
             "yanchor": "bottom",
             "bgcolor": "rgba(15, 23, 42, 0.5)",
             "bordercolor": "rgba(148, 163, 184, 0.15)",
             "borderwidth": 1,
-            "font": {"size": 12},
+            "font": {"size": 12, "color": "#f8fafc"},
+            "traceorder": "normal",
         },
-        xaxis={"title": {"text": "Education Level", "font": {"size": 14, "color": "#f8fafc"}}, "tickfont": {"size": 12}},
-        yaxis={"title": {"text": "Total Spend", "font": {"size": 14, "color": "#f8fafc"}}, "tickfont": {"size": 12}},
+        xaxis={
+            "title": {"text": "Education Level", "font": {"size": 15, "color": "#f8fafc"}},
+            "tickfont": {"size": 12, "color": "#e2e8f0"},
+        },
+        yaxis={
+            "title": {"text": "Total Spend", "font": {"size": 15, "color": "#f8fafc"}},
+            "tickfont": {"size": 12, "color": "#e2e8f0"},
+        },
     )
     return fig
 
