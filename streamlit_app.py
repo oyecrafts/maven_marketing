@@ -78,23 +78,99 @@ def clean_marketing_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def apply_dashboard_theme() -> None:
+    st.markdown(
+        """
+        <style>
+            :root {
+                --bg: #0f172a;
+                --panel: #111827;
+                --muted: #94a3b8;
+                --accent: #8b5cf6;
+                --accent-2: #22c55e;
+                --accent-3: #f59e0b;
+                --card: rgba(15, 23, 42, 0.85);
+                --border: rgba(148, 163, 184, 0.22);
+            }
+
+            .stApp {
+                background: linear-gradient(135deg, #0f172a 0%, #111827 28%, #1e293b 100%);
+                color: #e2e8f0;
+            }
+
+            .block-container {
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+
+            .stMetric {
+                background: rgba(15, 23, 42, 0.72);
+                border: 1px solid var(--border);
+                border-radius: 0.85rem;
+                padding: 0.8rem 1rem;
+                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.28);
+            }
+
+            div[data-testid="stMetricValue"] {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #f8fafc;
+            }
+
+            h1, h2, h3 {
+                color: #f8fafc;
+            }
+
+            .section-label {
+                font-size: 0.78rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #a5b4fc;
+                margin-bottom: 0.3rem;
+            }
+
+            .insight-card {
+                background: rgba(17, 24, 39, 0.9);
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                border-radius: 1rem;
+                padding: 1rem 1.1rem;
+                margin-bottom: 0.9rem;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def build_age_distribution(df: pd.DataFrame) -> go.Figure:
-    min_age = float(df["Age"].min()) if "Age" in df.columns else 0
-    max_age = float(df["Age"].max()) if "Age" in df.columns else 0
+    if "Age" not in df.columns:
+        empty = go.Figure()
+        empty.update_layout(
+            title="Age Distribution",
+            xaxis_title="Age Group",
+            yaxis_title="Number of Individuals",
+            template="plotly_dark",
+        )
+        return empty
+
+    min_age = float(df["Age"].min())
+    max_age = float(df["Age"].max())
     age_bins = [min_age, 30, 40, 50, 60, max_age]
     age_labels = ["<30", "30-39", "40-49", "50-59", "60+"]
-    df = df.copy()
-    df["Age_group"] = pd.cut(df["Age"], bins=age_bins, labels=age_labels, right=False)
-    counts = df["Age_group"].value_counts().sort_index()
+    df_plot = df.copy()
+    df_plot["Age_group"] = pd.cut(df_plot["Age"], bins=age_bins, labels=age_labels, right=False)
+    counts = df_plot["Age_group"].value_counts().sort_index()
 
-    fig = go.Figure(go.Bar(x=counts.index, y=counts.values, marker_color="lightcoral"))
+    fig = go.Figure(go.Bar(x=counts.index, y=counts.values, marker_color="#f472b6"))
     fig.update_layout(
         title="Distribution of Age Groups",
         xaxis_title="Age Group",
         yaxis_title="Number of Individuals",
-        xaxis=dict(tickangle=45),
-        yaxis=dict(gridcolor="lightgrey"),
+        xaxis=dict(tickangle=0),
+        template="plotly_dark",
         plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=20, r=20, t=40, b=20),
         showlegend=False,
     )
     return fig
@@ -113,13 +189,19 @@ def build_campaign_chart(df: pd.DataFrame) -> go.Figure:
         go.Bar(
             x=campaign_counts.index,
             y=campaign_counts.values,
-            marker=dict(color=["skyblue", "lightgreen", "lightcoral", "lightsalmon", "lightyellow"]),
+            marker=dict(
+                color=["#60a5fa", "#34d399", "#fbbf24", "#f472b6", "#a78bfa"]
+            ),
         )
     )
     fig.update_layout(
-        title="Acceptance Rates of Campaign Offers",
-        xaxis=dict(title="Campaign"),
-        yaxis=dict(title="Number of Responses"),
+        title="Campaign Offer Acceptance",
+        xaxis_title="Campaign",
+        yaxis_title="Responses",
+        template="plotly_dark",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=20, r=20, t=40, b=20),
     )
     return fig
 
@@ -133,15 +215,60 @@ def build_spending_by_education(df: pd.DataFrame):
         "MntSweetProducts",
         "MntGoldProds",
     ]
+    if "Education" not in df.columns:
+        return px.bar()
+
     education_spending = df.groupby("Education")[product_columns].sum().reset_index()
-    melted = education_spending.melt(id_vars="Education", var_name="Product", value_name="Amount")
+    melted = education_spending.melt(
+        id_vars="Education", var_name="Product", value_name="Amount"
+    )
+
     fig = px.bar(
         melted,
         x="Education",
         y="Amount",
         color="Product",
-        labels={"Education": "Education Level", "Amount": "Amount Spent", "Product": "Product Category"},
-        title="Amount Spent on Different Product Categories by Education Level",
+        barmode="group",
+        template="plotly_dark",
+        color_discrete_sequence=["#60a5fa", "#34d399", "#fbbf24", "#f472b6", "#c084fc", "#f87171"],
+        labels={
+            "Education": "Education Level",
+            "Amount": "Total Spend",
+            "Product": "Product Category",
+        },
+        title="Spending by Education Level and Product Category",
+    )
+    fig.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=20, r=20, t=40, b=20),
+        legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="left", x=0),
+    )
+    return fig
+
+
+def build_country_distribution(df: pd.DataFrame) -> go.Figure:
+    if "Country" not in df.columns:
+        empty = go.Figure()
+        empty.update_layout(
+            title="Top Customer Countries",
+            template="plotly_dark",
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+        )
+        return empty
+
+    country_counts = df["Country"].value_counts().head(8).sort_values(ascending=True)
+    fig = go.Figure(go.Bar(x=country_counts.values, y=country_counts.index, orientation="h", marker_color="#a78bfa"))
+    fig.update_layout(
+        title="Top Customer Countries",
+        xaxis_title="Customers",
+        yaxis_title="Country",
+        template="plotly_dark",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=10, r=20, t=40, b=20),
+        showlegend=False,
     )
     return fig
 
@@ -202,7 +329,7 @@ def build_regression_summary(df: pd.DataFrame) -> tuple[go.Figure, dict]:
             y=y_pred,
             mode="markers",
             name="Actual vs. Predicted",
-            marker=dict(color="purple", size=10, opacity=0.8),
+            marker=dict(color="#c084fc", size=10, opacity=0.8),
         )
     )
     max_val = max(float(y_test.max()), float(y_pred.max()))
@@ -212,48 +339,92 @@ def build_regression_summary(df: pd.DataFrame) -> tuple[go.Figure, dict]:
             y=[0, max_val],
             mode="lines",
             name="Perfect Predictions",
-            line=dict(color="gold", dash="dash"),
+            line=dict(color="#fbbf24", dash="dash"),
         )
     )
     fig.update_layout(
-        title="Actual vs. Predicted Recency",
+        title="Recency Prediction Performance",
         xaxis_title="Actual Recency",
         yaxis_title="Predicted Recency",
-        plot_bgcolor="#111111",
-        paper_bgcolor="#111111",
-        font=dict(color="white"),
-        showlegend=True,
-        legend=dict(x=0.8, y=0.1),
+        template="plotly_dark",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=20, r=20, t=40, b=20),
+        legend=dict(orientation="h", yanchor="bottom", y=1.0, xanchor="right", x=1),
     )
 
     return fig, {"mse": mse, "r2": r2}
 
 
+def get_overview_metrics(df: pd.DataFrame) -> dict:
+    metrics = {
+        "customers": len(df),
+        "avg_income": float(df["Income"].mean()) if "Income" in df.columns else 0.0,
+        "avg_recency": float(df["Recency"].mean()) if "Recency" in df.columns else 0.0,
+        "campaign_response_rate": (
+            float(df["Response"].mean() * 100) if "Response" in df.columns else 0.0
+        ),
+    }
+    return metrics
+
+
 def render_dashboard(df: pd.DataFrame) -> None:
     st.set_page_config(page_title="Marketing Insights", page_icon="📈", layout="wide")
+    apply_dashboard_theme()
+
     st.title("Sales and Marketing Insights")
+    st.caption("Customer behavior, campaign performance, and purchase trends from the marketing dataset")
 
-    age_fig = build_age_distribution(df)
-    campaign_fig = build_campaign_chart(df)
-    education_spending_fig = build_spending_by_education(df)
-    linear_fig, metrics = build_regression_summary(df)
-
-    col1, col2, col3 = st.columns(3)
+    metrics = get_overview_metrics(df)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Regression MSE", f"{metrics['mse']:.2f}")
+        st.metric("Customers", f"{metrics['customers']:,}")
     with col2:
-        st.metric("Regression R²", f"{metrics['r2']:.4f}")
+        st.metric("Avg Income", f"${metrics['avg_income']:,.0f}")
     with col3:
-        st.metric("Customers", f"{len(df):,}")
+        st.metric("Avg Recency", f"{metrics['avg_recency']:.1f} days")
+    with col4:
+        st.metric("Campaign Response", f"{metrics['campaign_response_rate']:.1f}%")
 
+    st.markdown('<div class="section-label">Customer profile</div>', unsafe_allow_html=True)
     left_col, right_col = st.columns(2)
     with left_col:
-        st.plotly_chart(age_fig, use_container_width=True)
+        st.plotly_chart(build_age_distribution(df), use_container_width=True)
     with right_col:
-        st.plotly_chart(campaign_fig, use_container_width=True)
+        st.plotly_chart(build_country_distribution(df), use_container_width=True)
 
-    st.plotly_chart(education_spending_fig, use_container_width=True)
+    st.markdown('<div class="section-label">Campaign performance</div>', unsafe_allow_html=True)
+    st.plotly_chart(build_campaign_chart(df), use_container_width=True)
+
+    st.markdown('<div class="section-label">Purchase and spend behavior</div>', unsafe_allow_html=True)
+    st.plotly_chart(build_spending_by_education(df), use_container_width=True)
+
+    st.markdown('<div class="section-label">Predictive analysis</div>', unsafe_allow_html=True)
+    linear_fig, regression_metrics = build_regression_summary(df)
     st.plotly_chart(linear_fig, use_container_width=True)
+
+    info_col1, info_col2 = st.columns(2)
+    with info_col1:
+        st.markdown(
+            """
+            <div class="insight-card">
+                <strong>Key takeaway:</strong><br>
+                The age profile shows the strongest concentration in mid-life customers, which is a valuable segment for retention and targeted offers.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with info_col2:
+        st.markdown(
+            f"""
+            <div class="insight-card">
+                <strong>Model performance:</strong><br>
+                Regression MSE: <b>{regression_metrics['mse']:.2f}</b><br>
+                R²: <b>{regression_metrics['r2']:.4f}</b>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def main() -> None:
