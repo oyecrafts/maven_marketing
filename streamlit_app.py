@@ -186,6 +186,14 @@ def apply_dashboard_theme() -> None:
                 border-radius: 0.7rem;
                 border: none;
             }
+
+            div[data-testid="stPlotlyChart"] {
+                overflow: visible !important;
+            }
+
+            .js-plotly-plot .plotly .legend {
+                overflow: visible !important;
+            }
         </style>
         """,
         unsafe_allow_html=True,
@@ -305,11 +313,29 @@ def build_spending_by_education(df: pd.DataFrame):
         title="Spending by Education Level and Product Category",
     )
     fig.update_layout(
+        title={
+            "text": "Spending by Education Level and Product Category",
+            "x": 0.5,
+            "xanchor": "center",
+            "font": {"size": 22, "color": "#f8fafc"},
+        },
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=15, r=15, t=45, b=20),
-        height=460,
-        legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="left", x=0),
+        margin=dict(l=20, r=20, t=70, b=40),
+        height=500,
+        legend={
+            "orientation": "h",
+            "x": 0,
+            "y": 1.12,
+            "xanchor": "left",
+            "yanchor": "bottom",
+            "bgcolor": "rgba(15, 23, 42, 0.5)",
+            "bordercolor": "rgba(148, 163, 184, 0.15)",
+            "borderwidth": 1,
+            "font": {"size": 12},
+        },
+        xaxis={"title": {"text": "Education Level", "font": {"size": 14, "color": "#f8fafc"}}, "tickfont": {"size": 12}},
+        yaxis={"title": {"text": "Total Spend", "font": {"size": 14, "color": "#f8fafc"}}, "tickfont": {"size": 12}},
     )
     return fig
 
